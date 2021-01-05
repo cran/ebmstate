@@ -12,7 +12,7 @@
 #' @return Interval estimates for transition probabilities. 
 #' @author Rui Costa
 #' @seealso \code{\link{probtrans_ebmstate}}; \code{\link{boot_coxrfx}}; 
-#' \code{\link[mstate:trans]{transMat}}; \code{\link[mstate]{expand.covs}}
+#' \code{\link[mstate]{transMat}}; \code{\link[mstate]{expand.covs}}
 
 
 boot_probtrans<-function(coxrfx_fits_boot,patient_data,tmat,initial_state,max_time){
@@ -220,8 +220,8 @@ boot_coxrfx<-function(mstate_data_expanded,which_group,min_nr_samples=100,output
 
 
 boot_ebmstate<-function(mstate_data_expanded=NULL,which_group=NULL,min_nr_samples=NULL,
-                      patient_data=NULL,initial_state=NULL,tmat=NULL,
-                      backup_file=NULL,input_file=NULL,time_model=NULL,coxrfx_args=NULL,
+                      patient_data=NULL,initial_state=NULL,tmat=NULL,time_model=NULL,
+                      backup_file=NULL,input_file=NULL,coxrfx_args=NULL,
                       msfit_args=NULL,probtrans_args=NULL){
   
   list2env(coxrfx_args,envir = environment())
@@ -277,7 +277,7 @@ boot_ebmstate<-function(mstate_data_expanded=NULL,which_group=NULL,min_nr_sample
       msfit_objects_boot[[j]]<-do.call("msfit_generic",c(list(object=coxrfx_fits_boot[[j]],newdata=patient_data,trans=tmat),msfit_args))
       probtrans_objects_boot[[j]]<-do.call("probtrans_ebmstate",c(list(initial_state=initial_state,cumhaz=msfit_objects_boot[[j]],model=time_model),probtrans_args))[[1]]
       print(min(apply(boot_matrix, 2, function(x) sum(!is.na(x)))))
-      if(j %%5==0){
+      if(j %%5==0 & !is.null(backup_file)){
         save(coxrfx_fits_boot,probtrans_objects_boot,
              msfit_objects_boot,boot_matrix,j, file =backup_file)
       }
@@ -338,8 +338,8 @@ boot_ebmstate<-function(mstate_data_expanded=NULL,which_group=NULL,min_nr_sample
 
 
 loo_ebmstate<-function(mstate_data,mstate_data_expanded,which_group,
-                     patient_IDs,initial_state,tmat,
-                     backup_file=NULL,input_file=NULL,time_model=NULL,coxrfx_args=list(),
+                     patient_IDs,initial_state,tmat,time_model,
+                     backup_file=NULL,input_file=NULL,coxrfx_args=list(),
                      msfit_args=NULL,probtrans_args=NULL){
   list2env(coxrfx_args,envir = environment())
   if(!is.null(input_file)){
@@ -382,7 +382,7 @@ loo_ebmstate<-function(mstate_data,mstate_data_expanded,which_group,
       patient_data$strata<-unique(mstate_data[c("trans","strata")])[,2]
       msfit_objects_loo[[j]]<-do.call("msfit_generic",c(list(object=coxrfx_fits_loo[[j]],newdata=patient_data,trans=tmat),msfit_args))
       probtrans_objects_loo[[j]]<-do.call("probtrans_ebmstate",c(list(initial_state=initial_state,cumhaz=msfit_objects_loo[[j]],model=time_model),probtrans_args))
-      if(j %%5==0){
+      if(j %%5==0 & !is.null(backup_file)){
         save(patient_IDs,coxrfx_fits_loo,msfit_objects_loo,probtrans_objects_loo,j,file=backup_file)
       }
       print(j)
