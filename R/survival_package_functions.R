@@ -59,8 +59,8 @@ coxph<-function (formula, data, weights, subset, na.action, init, control,
   if (control$timefix) 
     Y <- aeqSurv(Y)
   if (length(attr(Terms, "variables")) > 2) {
-    ytemp <- terms.inner(formula[1:2])
-    xtemp <- terms.inner(formula[-2])
+    ytemp <- terms_inner(formula[1:2])
+    xtemp <- terms_inner(formula[-2])
     if (any(!is.na(match(xtemp, ytemp)))) 
       warning("a variable appears on both the left and right sides of the formula")
   }
@@ -374,23 +374,23 @@ coxph<-function (formula, data, weights, subset, na.action, init, control,
 }
 
 
-terms.inner<-function (x) 
+terms_inner<-function (x) 
 {
   if (inherits(x, "formula")) {
     if (length(x) == 3) 
-      c(terms.inner(x[[2]]), terms.inner(x[[3]]))
-    else terms.inner(x[[2]])
+      c(terms_inner(x[[2]]), terms_inner(x[[3]]))
+    else terms_inner(x[[2]])
   }
   else if (inherits(x, "call") && (x[[1]] != as.name("$") && 
                                    x[[1]] != as.name("["))) {
     if (x[[1]] == "+" || x[[1]] == "*" || x[[1]] == "-") {
       if (length(x) == 3) 
-        c(terms.inner(x[[2]]), terms.inner(x[[3]]))
-      else terms.inner(x[[2]])
+        c(terms_inner(x[[2]]), terms_inner(x[[3]]))
+      else terms_inner(x[[2]])
     }
     else if (x[[1]] == as.name("Surv")) 
-      unlist(lapply(x[-1], terms.inner))
-    else terms.inner(x[[2]])
+      unlist(lapply(x[-1], terms_inner))
+    else terms_inner(x[[2]])
   }
   else (deparse(x))
 }

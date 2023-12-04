@@ -8,7 +8,6 @@ CoxRFX(
   Z,
   surv,
   groups = rep(1, ncol(Z)),
-  tmat = NULL,
   which.mu = unique(groups),
   tol = 0.001,
   max.iter = 50,
@@ -32,10 +31,6 @@ function).}
 \item{groups}{A character or numeric vector whose \eqn{i}th element gives the group of the regression
 coefficient associated with the \eqn{i}th covariate column of Z (coefficients belonging to the same group 
 share the same Gaussian prior).}
-
-\item{tmat}{Transition matrix describing the states and transitions in 
-the multi-state model. See \code{trans} in \code{\link[mstate:msprep]{mstate::msprep}}
-for more detailed information.}
 
 \item{which.mu}{A vector with names or numbers of coefficient groups (see 
 argument \code{groups}). If the name or number of a group of coefficients is
@@ -61,7 +56,7 @@ Or a single value, in case the initial value of the variance hyperparameter is m
 \value{
 An object of class \code{c(coxrfx,coxph.penal,coxph)},
 which is essentially a \code{coxph} object with a few extra 
-fields [the inputs $groups, $Z, $surv, and $tmat,
+fields [the inputs $groups, $Z and $surv,
 and the hyperparameters $sigma2 (variances) and $mu (means)].
 See \code{\link[survival:coxph.object]{survival::coxph.object}}.
 }
@@ -123,7 +118,7 @@ surv<-survival::Surv(mstate_data_sample$Tstart,
 groups<-paste0(rep("group", ncol(Z)-2),c("_1","_2","_3"))
 
 #fit random effects model
-coxrfx_object<-CoxRFX(Z,surv,groups,tmat)
+coxrfx_object<-CoxRFX(Z,surv,groups)
 
 #show point estimates
 summary(coxrfx_object)

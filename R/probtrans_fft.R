@@ -2,34 +2,51 @@
 #'using a convolution algorithm based on the Fast Fourier transform.
 #'@details
 #'The \code{time} argument is crucial for precision.
-#' The density of time points and 
+#' The density of time points and
 #'the upper time limit should
 #'be increased until the estimated curves become stable.
 #'A useful rule of thumb is to set the upper time limit
-#'to a time point in which the 
+#'to a time point in which the
 #'probability of each transient state is zero and the probability of
 #'each absorbing state is constant.
 #' 
-#' The algorithm behind \code{probtrans_ebmstate} is based 
-#' on the convolution of density and survival functions and
-#' is suitable for processes with a tree-like transition
-#' structure only.
+#'For the same approximation grid, \code{probtrans_fft} doesn’t
+#'always yield the same result as \code{probtrans_ebmstate}
+#'(semi-Markov version), even though they are meant to approximate
+#'exactly the same convolution. \code{probtrans_ebmstate} is
+#'sensitive to the grid interval size, but not such much to the
+#'maximum grid time. \code{probtrans_fft} is sensitive to both
+#'these parameters, as referred above.
+#' 
+#'The algorithm behind \code{probtrans_ebmstate} is based
+#'on the convolution of density and survival functions and
+#'is suitable for processes with a tree-like transition
+#'structure only.
 #'
 #'@param initial_state The present function 
 #'estimates state occupation probabilities from the state given
 #'in this argument.
 #'@param cumhaz An \code{msfit} object created by running
 #'\code{mstate} or \code{mstate_generic}.
-#'@param time A vector of positive and increasing time points
-#' starting from and including zero.
+#'@param max_time The maximum time for which transition probabilities
+#'are estimated.
+#'@param nr_steps The number of steps in the convolution algorithm
+#' (larger increases precision but makes it slower)
 #'@return An object of class 'probtrans'. See the 'value' 
 #'section in the help page of \code{mstate::probtrans}.
 #'@author Rui Costa
-#'@seealso \code{\link{probtrans}};
+#'@seealso \code{\link{probtrans}}; \code{\link{probtrans_ebmstate}}
 #'
 #'@export
 
-probtrans_fft<-function(initial_state,cumhaz,time){
+probtrans_fft<-function(initial_state,cumhaz,max_time,nr_steps=10000){
+  stopifnot(
+    "argument 'initial_state' must be of class 'character'" = class(initial_state) == 'character',
+    "argument 'cumhaz' must be of class 'msfit'" = any(class(cumhaz) == 'msfit'),
+    "argument 'max_time' must be numeric" = is.numeric(max_time)
+  )
+  if(is.null(max_time)) max_time<-max(cumhaz$Haz$time)
+  time<-seq(0,max_time,length.out=nr_steps)
   tmat<-cumhaz$trans
   transitions<-na.exclude(as.vector(tmat))
   spline_list<-cumhaz_splines(cumhaz)

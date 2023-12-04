@@ -41,9 +41,9 @@
 #include "survS.h"
 #include "survproto.h"
 
-void coxscore(Sint   *nx,      Sint   *nvarx,    double *y, 
-	      double *covar2,  Sint   *strata,   double *score, 
-	      double *weights, Sint   *method,   double *resid2,
+void coxscore(int   *nx,      int   *nvarx,    double *y, 
+	      double *covar2,  int   *strata,   double *score, 
+	      double *weights, int   *method,   double *resid2,
 	      double *scratch)
     {
     int i,j, k;

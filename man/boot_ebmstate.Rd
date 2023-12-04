@@ -5,7 +5,7 @@
 \title{Bootstrap samples and bootstrap interval estimates}
 \usage{
 boot_ebmstate(
-  mstate_data_expanded = NULL,
+  mstate_data = NULL,
   which_group = NULL,
   min_nr_samples = NULL,
   patient_data = NULL,
@@ -20,7 +20,7 @@ boot_ebmstate(
 )
 }
 \arguments{
-\item{mstate_data_expanded}{Data in `long format`, possibly with `expanded` covariates (as obtained by running mstate::expand.covs). See details.}
+\item{mstate_data}{A data frame with outcome and covariate data in long format.}
 
 \item{which_group}{A character vector with the same meaning as the `groups` argument of the function \code{CoxRFX} but named (with the covariate names).}
 
@@ -59,8 +59,8 @@ In a given bootstrap sample there might not be enough information to generate
 estimates for all coefficients. If a covariate has little or no variation in a given bootstrap sample, 
 no estimate of its coefficient will be computed. The present function will
 keep taking bootstrap samples until every coefficient has been estimated
-at least \code{min_nr_samples} times. After expansion, the original covariates should be
-excluded from \code{mstate_data_expanded}.
+at least \code{min_nr_samples} times. \code{covariate_df} should only contain the covariates
+of the model one wishes to estimate.
 }
 \author{
 Rui Costa

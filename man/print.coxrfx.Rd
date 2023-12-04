@@ -11,8 +11,15 @@
 
 \item{...}{further arguments passed to or from other methods.}
 }
+\value{
+Returns an invisible NULL object.
+}
 \description{
 This function implicitly calls summary.coxrfx().
+}
+\details{
+Prints two data frames, one with hyperparameter estimates and 
+another with regression coefficient estimates.
 }
 \author{
 Moritz Gerstung & Rui Costa

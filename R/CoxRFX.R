@@ -1,4 +1,3 @@
-
 #' Empirical Bayes, multi-state Cox model
 #' 
 #' This function estimates a multi-state Cox model with one or more Gaussian priors
@@ -18,9 +17,6 @@
 #' @param groups A character or numeric vector whose \eqn{i}th element gives the group of the regression
 #' coefficient associated with the \eqn{i}th covariate column of Z (coefficients belonging to the same group 
 #' share the same Gaussian prior).
-#' @param tmat Transition matrix describing the states and transitions in 
-#' the multi-state model. See \code{trans} in \code{\link[mstate:msprep]{mstate::msprep}}
-#' for more detailed information.
 #' @param which.mu A vector with names or numbers of coefficient groups (see 
 #' argument \code{groups}). If the name or number of a group of coefficients is
 #' given in this argument, \code{CoxRFX} will estimate the mean of its Gaussian distribution;
@@ -53,7 +49,7 @@
 
 #' @return An object of class \code{c(coxrfx,coxph.penal,coxph)},
 #' which is essentially a \code{coxph} object with a few extra 
-#' fields [the inputs $groups, $Z, $surv, and $tmat,
+#' fields [the inputs $groups, $Z and $surv,
 #' and the hyperparameters $sigma2 (variances) and $mu (means)].
 #' See \code{\link[survival:coxph.object]{survival::coxph.object}}. 
 #' 
@@ -64,7 +60,12 @@
 #' \code{\link[survival:Surv]{survival::Surv}}; package \code{coxme}.
 #' @export
 #' @example inst/examples/CoxRFX-example.R
-CoxRFX <- function(Z, surv, groups = rep(1, ncol(Z)),tmat=NULL, which.mu = unique(groups), tol=1e-3, max.iter=50, sigma0 = 0.1, sigma.hat=c("df","MLE","REML","BLUP"), verbose=FALSE, ...){
+CoxRFX <- function(Z, surv, groups = rep(1, ncol(Z)), which.mu = unique(groups), tol=1e-3, max.iter=50, sigma0 = 0.1, sigma.hat=c("df","MLE","REML","BLUP"), verbose=FALSE, ...){
+    stopifnot(
+    "argument 'Z' must be of class 'data.frame'" = class(Z) == 'data.frame',
+    "argument 'surv' must be of class 'Surv'" = class(surv) == 'Surv'
+  )
+  
   ##
   trans<-Z$trans
   strata<-Z$strata
@@ -154,7 +155,6 @@ CoxRFX <- function(Z, surv, groups = rep(1, ncol(Z)),tmat=NULL, which.mu = uniqu
 	fit$mu = mu
 	fit$Z = data.frame(Z[,order(o)],trans=trans,strata=strata)
 	fit$surv = surv
-	fit$tmat=tmat
 	C <- rbind(diag(1, ncol(Z)),t(as.matrix(MakeInteger(groups)[which.mu]))) ## map from centred to uncentred coefficients 
 	fit$groups = groups[order(o)]
 	var = fit$var
@@ -193,6 +193,10 @@ CoxRFX <- function(Z, surv, groups = rep(1, ncol(Z)),tmat=NULL, which.mu = uniqu
 	attr(fit$terms,"specials")<-list(strata=NULL,cluster=NULL)
 	attr(fit$terms,"specials")$strata<-length(attr(fit$terms,"term.labels"))+1
 	fit$call <- call
+    fit$BIC <- -2*fit$loglik[2]
+                +log(fit$nevent)*(length(fit$coefficients)
+                                            +sum(fit$mu!=0)
+                                            +length(fit$sigma2))
 	class(fit) <- c("coxrfx", class(fit))
 	return(fit)
 }
@@ -207,7 +211,9 @@ CoxRFX <- function(Z, surv, groups = rep(1, ncol(Z)),tmat=NULL, which.mu = uniqu
 #' @param object A \code{coxrfx} object 
 #' (obtained by running the function \code{CoxRFX}).
 #' @param ... Further arguments passed to or from other methods.
-#' @return NULL
+#' @return Returns an invisible NULL object.
+#' @details Prints two data frames, one with hyperparameter estimates and 
+#' another with regression coefficient estimates. 
 #' 
 #' @author Rui Costa
 #' @export
@@ -224,8 +230,9 @@ summary.coxrfx <- function(object,...){
 #' This function implicitly calls summary.coxrfx().
 #' @param x A \code{coxrfx} object
 #' @param ... further arguments passed to or from other methods.
-#' @return NULL
-#' 
+#' @return Returns an invisible NULL object.
+#' @details Prints two data frames, one with hyperparameter estimates and 
+#' another with regression coefficient estimates.
 #' @author Moritz Gerstung & Rui Costa
 #' @export
 #' @method print coxrfx
@@ -244,7 +251,7 @@ print.coxrfx <- function(x,...){
 #' @param x An object of class \code{msfit} or double class \code{msfit} 
 #' and \code{coxrfx}.
 #' @param ... Further arguments passed to or from other methods.
-#' @return NULL
+#' @return The input object (an object of double class \code{msfit} and \code{coxrfx}).
 #' 
 #' @author Rui Costa
 #' @export
@@ -319,8 +326,8 @@ coxph<-function (formula, data, weights, subset, na.action, init, control,
   if (control$timefix) 
     Y <- aeqSurv(Y)
   if (length(attr(Terms, "variables")) > 2) {
-    ytemp <- terms.inner(formula[1:2])
-    xtemp <- terms.inner(formula[-2])
+    ytemp <- terms_inner(formula[1:2])
+    xtemp <- terms_inner(formula[-2])
     if (any(!is.na(match(xtemp, ytemp)))) 
       warning("a variable appears on both the left and right sides of the formula")
   }
@@ -634,23 +641,23 @@ coxph<-function (formula, data, weights, subset, na.action, init, control,
 }
 
 
-terms.inner<-function (x) 
+terms_inner<-function (x) 
 {
   if (inherits(x, "formula")) {
     if (length(x) == 3) 
-      c(terms.inner(x[[2]]), terms.inner(x[[3]]))
-    else terms.inner(x[[2]])
+      c(terms_inner(x[[2]]), terms_inner(x[[3]]))
+    else terms_inner(x[[2]])
   }
   else if (inherits(x, "call") && (x[[1]] != as.name("$") && 
                                    x[[1]] != as.name("["))) {
     if (x[[1]] == "+" || x[[1]] == "*" || x[[1]] == "-") {
       if (length(x) == 3) 
-        c(terms.inner(x[[2]]), terms.inner(x[[3]]))
-      else terms.inner(x[[2]])
+        c(terms_inner(x[[2]]), terms_inner(x[[3]]))
+      else terms_inner(x[[2]])
     }
     else if (x[[1]] == as.name("Surv")) 
-      unlist(lapply(x[-1], terms.inner))
-    else terms.inner(x[[2]])
+      unlist(lapply(x[-1], terms_inner))
+    else terms_inner(x[[2]])
   }
   else (deparse(x))
 }

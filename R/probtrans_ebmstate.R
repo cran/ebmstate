@@ -184,6 +184,11 @@ joint_cum_hazard_function<-function(t,competing_transitions,spline_list){
 #'
 #'@export
 probtrans_ebmstate<-function(initial_state,cumhaz,model,max_time=NULL,nr_steps=10000){
+  stopifnot(
+    "argument 'initial_state' must be of class 'character'" = class(initial_state) == 'character',
+    "argument 'cumhaz' must be of class 'msfit'" = any(class(cumhaz) == 'msfit'),
+    "'model' must be either 'clockforward' or 'clockreset' " = model %in% c('clockforward','clockreset')
+  )
   if(is.null(max_time)) max_time<-max(cumhaz$Haz$time)
   probtrans_object<-lapply(initial_state, probtrans_by_convolution,tmat=cumhaz$trans,cumhaz=cumhaz,model=model,max_time=max_time,nr_steps=nr_steps)
   probtrans_object$trans<-cumhaz$trans

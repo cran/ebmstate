@@ -13,6 +13,9 @@ and \code{coxrfx}.}
 
 \item{...}{Further arguments passed to or from other methods.}
 }
+\value{
+The input object (an object of double class \code{msfit} and \code{coxrfx}).
+}
 \description{
 This method is a simple call to \code{print.default}.
 Its main purpose is to override \code{print.coxrfx}

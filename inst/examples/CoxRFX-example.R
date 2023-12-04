@@ -38,7 +38,7 @@ surv<-survival::Surv(mstate_data_sample$Tstart,
 groups<-paste0(rep("group", ncol(Z)-2),c("_1","_2","_3"))
 
 #fit random effects model
-coxrfx_object<-CoxRFX(Z,surv,groups,tmat)
+coxrfx_object<-CoxRFX(Z,surv,groups)
 
 #show point estimates
 summary(coxrfx_object)

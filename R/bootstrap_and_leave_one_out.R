@@ -16,6 +16,13 @@
 
 
 boot_probtrans<-function(coxrfx_fits_boot,patient_data,tmat,initial_state,max_time){
+  stopifnot(
+    "argument 'coxrfx_fits_boot' must be a list" = is.list(coxrfx_fits_boot),
+    "argument 'patient_data' must be a data frame" = is.data.frame(patient_data),
+    "argument 'tmat' must be a matrix" = is.matrix(tmat),
+    "argument 'initial_state' must be an object of type 'character'" = is.character(initial_state),
+    "argument 'max_time' must be numeric" = is.numeric(max_time)
+  )
   msfit_objects_boot<-vector("list",length(coxrfx_fits_boot))
   probtrans_objects_boot<-vector("list",length(coxrfx_fits_boot))
   for(i in 1:length(coxrfx_fits_boot)){
@@ -139,10 +146,16 @@ boot_coxrfx<-function(mstate_data_expanded,which_group,min_nr_samples=100,output
   boot_matrix<-matrix(nrow=0,ncol = sum(!names(mstate_data_expanded)%in%c("id","from","to","trans","Tstart","Tstop","time","status","strata","type")),dimnames = list(NULL,names(mstate_data_expanded)[!names(mstate_data_expanded)%in%c("id","from","to","trans","Tstart","Tstop","time","status","strata","type")]))
   j<-1
   repeat{
-    boot_samples_trans_1<-sample(rownames(mstate_data_expanded[mstate_data_expanded$trans==1,]),replace = TRUE)
-    boot_samples_trans_2<-sample(rownames(mstate_data_expanded[mstate_data_expanded$trans==2,]),replace = TRUE)
-    boot_samples_trans_3<-sample(rownames(mstate_data_expanded[mstate_data_expanded$trans==3,]),replace = TRUE)
-    boot_samples<-c(boot_samples_trans_1,boot_samples_trans_2,boot_samples_trans_3) 
+    boot_samples <- vector('list',length(unique(mstate_data_expanded$strata)))
+    for (i in 1:length(boot_samples)){
+        trans_rownames <- rownames(mstate_data_expanded[mstate_data_expanded$trans==i,])
+        boot_samples[[i]] <- eval(call('sample', trans_rownames, replace = TRUE))
+    }
+    boot_samples <- unlist(boot_samples)
+    # boot_samples_trans_1<-sample(rownames(mstate_data_expanded[mstate_data_expanded$trans==1,]),replace = TRUE)
+    # boot_samples_trans_2<-sample(rownames(mstate_data_expanded[mstate_data_expanded$trans==2,]),replace = TRUE)
+    # boot_samples_trans_3<-sample(rownames(mstate_data_expanded[mstate_data_expanded$trans==3,]),replace = TRUE)
+    # boot_samples<-c(boot_samples_trans_1,boot_samples_trans_2,boot_samples_trans_3) 
     
     mstate_data_expanded.boot<-mstate_data_expanded[boot_samples,]
     
@@ -193,7 +206,7 @@ boot_coxrfx<-function(mstate_data_expanded,which_group,min_nr_samples=100,output
 #' This function computes bootstrap samples of regression coefficients,
 #' cumulative hazard functions, and transition probability functions.
 #' 
-#' @param mstate_data_expanded Data in `long format`, possibly with `expanded` covariates (as obtained by running mstate::expand.covs). See details.
+#' @param mstate_data A data frame with outcome and covariate data in long format.
 #' @param which_group A character vector with the same meaning as the `groups` argument of the function \code{CoxRFX} but named (with the covariate names).
 #' @param min_nr_samples The confidence interval of any coefficient is based on a number of bootstrap samples at least as high as this argument. See details.
 #' @param patient_data The covariate data for which the estimates of cumulative hazards and transition probabilities are computed. 
@@ -213,99 +226,150 @@ boot_coxrfx<-function(mstate_data_expanded,which_group,min_nr_samples=100,output
 #' estimates for all coefficients. If a covariate has little or no variation in a given bootstrap sample, 
 #' no estimate of its coefficient will be computed. The present function will
 #' keep taking bootstrap samples until every coefficient has been estimated
-#' at least \code{min_nr_samples} times. After expansion, the original covariates should be
-#' excluded from \code{mstate_data_expanded}.
+#' at least \code{min_nr_samples} times. \code{covariate_df} should only contain the covariates
+#' of the model one wishes to estimate.
 #' @author Rui Costa
 #' @export
 
 
-boot_ebmstate<-function(mstate_data_expanded=NULL,which_group=NULL,min_nr_samples=NULL,
-                      patient_data=NULL,initial_state=NULL,tmat=NULL,time_model=NULL,
-                      backup_file=NULL,input_file=NULL,coxrfx_args=NULL,
-                      msfit_args=NULL,probtrans_args=NULL){
-  
-  list2env(coxrfx_args,envir = environment())
-  if(!is.null(input_file)){
+boot_ebmstate <- function(mstate_data = NULL,
+                          which_group = NULL,
+                          min_nr_samples = NULL, patient_data = NULL,
+                          initial_state = NULL, tmat = NULL, time_model = NULL,
+                          backup_file = NULL, input_file = NULL,
+                          coxrfx_args = NULL, msfit_args = NULL,
+                          probtrans_args = NULL) {
+  stopifnot(
+    "argument 'mstate_data' must be a data frame" = is.data.frame(mstate_data),
+    "argument 'which_group' must be of type 'character'" = is.character(which_group),
+    "argument 'min_nr_samples' must be numeric" = is.numeric(min_nr_samples),
+    "argument 'min_nr_samples' must be a positive integer" 
+    = min_nr_samples > 0 & min_nr_samples/ceiling(min_nr_samples) == 1, 
+    "argument 'patient_data' must be a data frame " = is.data.frame(patient_data),
+    "argument 'initial_state' must be of type 'character'" = is.character(initial_state),
+    "argument 'tmat' must be a matrix" = is.matrix(tmat),
+    "argument 'time_model' must be either 'clockreset' or 'clockforward'" 
+    = time_model %in% c("clockreset","clockforward"),
+    "argument 'backup_file' must be of type 'character'" 
+      = (is.null(backup_file) | is.character(backup_file)),
+    "argument 'input_file' must be of type 'character'" 
+      = (is.null(input_file) | is.character(input_file)),
+    "argument 'coxrfx_args' must be a list" = (is.null(coxrfx_args) | is.list(coxrfx_args)),
+    "argument 'msfit_args' must be a list" = (is.null(msfit_args) | is.list(msfit_args)),
+    "argument 'probtrans_args' must be a list" = (is.null(probtrans_args) | is.list(probtrans_args))
+  )
+  list2env(coxrfx_args, envir = environment())
+  if (!is.null(input_file)) {
     load(input_file)
-  }else{
-    coxrfx_fits_boot<-vector("list")
-    msfit_objects_boot<-vector("list")
-    probtrans_objects_boot<-vector("list")
-    rownames(mstate_data_expanded)<-1:nrow(mstate_data_expanded)
-    boot_matrix<-matrix(nrow=0,
-                        ncol = sum(!names(mstate_data_expanded)%in%c("id","from","to","trans",
-                                                                     "Tstart","Tstop","strata","time",
-                                                                     "status","type")),
-                        dimnames = list(NULL,names(mstate_data_expanded)[!names(mstate_data_expanded)%in%c("id","from","to","trans",
-                                                                                                           "Tstart","Tstop","strata","time",
-                                                                                                           "status","type")]))
-    j<-1  
+  } else {
+    coxrfx_fits_boot <- vector("list")
+    msfit_objects_boot <- vector("list")
+    probtrans_objects_boot <- vector("list")
+    rownames(mstate_data) <- 1:nrow(mstate_data)
+    names_to_exclude <- c("id", "from", "to", "trans", "Tstart", "Tstop",
+                          "strata", "time", "status", "type")
+    boot_matrix <- matrix(
+      nrow = 0,
+      ncol = sum(!names(mstate_data)
+                 %in% names_to_exclude),
+      dimnames = list(NULL, names(mstate_data)
+                      [!names(mstate_data) %in% names_to_exclude])
+    )
+    j <- 1
   }
-  tol<-unlist(mget("tol",ifnotfound = list(function(tol) 0.001)))
-  max.iter<- unlist(mget("max.iter",ifnotfound = list(function(max.iter) 50)))
-  sigma0<- unlist(mget("sigma0",ifnotfound = list(function(sigma0) 0.1)))
-  sigma.hat<- unlist(mget("sigma.hat",ifnotfound = list(function(sigma.hat) "df")))
-  verbose<- unlist(mget("verbose",ifnotfound = list(function(verbose) FALSE)))
-  repeat{
-    boot_samples_trans_1<-sample(rownames(mstate_data_expanded[mstate_data_expanded$trans==1,]),replace = TRUE)
-    boot_samples_trans_2<-sample(rownames(mstate_data_expanded[mstate_data_expanded$trans==2,]),replace = TRUE)
-    boot_samples_trans_3<-sample(rownames(mstate_data_expanded[mstate_data_expanded$trans==3,]),replace = TRUE)
-    boot_samples<-c(boot_samples_trans_1,boot_samples_trans_2,boot_samples_trans_3) 
+  tol <- unlist(mget("tol", ifnotfound = list(function(tol) 0.001)))
+  max.iter <- unlist(mget("max.iter", ifnotfound = list(function(max.iter) 50)))
+  sigma0 <- unlist(mget("sigma0", ifnotfound = list(function(sigma0) 0.1)))
+  sigma.hat <- unlist(mget("sigma.hat", ifnotfound = list(function(sigma.hat) "df"))) # nolint: line_length_linter.
+  verbose <- unlist(mget("verbose", ifnotfound = list(function(verbose) FALSE)))
+  repeat {
+    boot_samples_trans_1 <- sample(rownames(mstate_data[mstate_data$trans == 1, ]), # nolint: line_length_linter.
+                                   replace = TRUE)
+    boot_samples_trans_2 <- sample(rownames(mstate_data[mstate_data$trans == 2, ]), # nolint: line_length_linter.
+                                   replace = TRUE)
+    boot_samples_trans_3 <- sample(rownames(mstate_data[mstate_data$trans == 3, ]), # nolint: line_length_linter.
+                                   replace = TRUE)
+    boot_samples <- c(boot_samples_trans_1,boot_samples_trans_2,boot_samples_trans_3)  # nolint: line_length_linter.
     
-    mstate_data_expanded.boot<-mstate_data_expanded[boot_samples,]
-    covariate_df<-mstate_data_expanded.boot[!names(mstate_data_expanded.boot)%in%c("id","from","to",
-                                                                                   "Tstart","Tstop","time","status","type")]
-    groups2<-which_group[names(covariate_df)[!names(covariate_df)%in%c("strata","trans")]]
-    if(time_model=="clockreset"){
-      surv_object<-Surv(mstate_data_expanded.boot$time,mstate_data_expanded.boot$status) 
-    }else if(time_model=="clockforward"){
-      surv_object<-Surv(mstate_data_expanded.boot$Tstart,mstate_data_expanded.boot$Tstop,mstate_data_expanded.boot$status) 
+    mstate_data.boot <- mstate_data[boot_samples, ]
+    covariate_df <- mstate_data.boot[
+      !names(mstate_data.boot) %in% c("id", "from", "to", "Tstart",
+                                               "Tstop", "time", "status",
+                                               "type")
+    ]
+    groups2 <- which_group[
+      names(covariate_df)[!names(covariate_df) %in% c("strata", "trans")]
+    ]
+    if (time_model == "clockreset") {
+      surv_object <- Surv(mstate_data.boot$time,
+                          mstate_data.boot$status)
+    } else if (time_model == "clockforward") {
+      surv_object <- Surv(mstate_data.boot$Tstart,
+                          mstate_data.boot$Tstop,
+                          mstate_data.boot$status) 
     }
-    which.mu<-unlist(mget("which.mu",ifnotfound = list(function(which.mu) unique(groups2))))
-    coxrfx_fits_boot[[j]]<-CoxRFX(covariate_df,surv_object,groups2,which.mu =which.mu,
-                                  tol = tol,
-                                  max.iter = max.iter,
-                                  sigma0 = sigma0,
-                                  sigma.hat = sigma.hat,
-                                  verbose = verbose,coxrfx_args)
+    which.mu <- unlist(
+      mget("which.mu", ifnotfound = list(function(which.mu) unique(groups2)))
+    )
+    coxrfx_fits_boot[[j]] <- CoxRFX(covariate_df, surv_object, groups2,
+                                    which.mu = which.mu, tol = tol, 
+                                    max.iter = max.iter, sigma0 = sigma0,
+                                    sigma.hat = sigma.hat, verbose = verbose,
+                                    coxrfx_args)
     #coxrfx_fits_boot[[j]]<-do.call("CoxRFX",c(list(Z=covariate_df,surv=surv_object,groups=groups2),coxrfx_args))
     
-    if(sum(is.na(coxrfx_fits_boot[[j]]$coefficients))==0){
-      boot_matrix<-rbind(boot_matrix,rep(NA,ncol(boot_matrix)))
-      boot_matrix[j,names(coxrfx_fits_boot[[j]]$coefficients)]<-coxrfx_fits_boot[[j]]$coefficients
-      
-      msfit_objects_boot[[j]]<-do.call("msfit_generic",c(list(object=coxrfx_fits_boot[[j]],newdata=patient_data,trans=tmat),msfit_args))
-      probtrans_objects_boot[[j]]<-do.call("probtrans_ebmstate",c(list(initial_state=initial_state,cumhaz=msfit_objects_boot[[j]],model=time_model),probtrans_args))[[1]]
+    if (sum(is.na(coxrfx_fits_boot[[j]]$coefficients)) == 0) {
+      boot_matrix <- rbind(boot_matrix, rep(NA, ncol(boot_matrix)))
+      boot_matrix[
+        j,
+        names(coxrfx_fits_boot[[j]]$coefficients)
+      ] <- coxrfx_fits_boot[[j]]$coefficients
+      msfit_objects_boot[[j]] <- do.call(
+        "msfit_generic",
+        c(list(
+          object = coxrfx_fits_boot[[j]],
+          newdata = patient_data,
+          trans = tmat
+        ), msfit_args)
+      )
+      probtrans_objects_boot[[j]] <- do.call(
+        "probtrans_ebmstate",
+        c(list(
+          initial_state = initial_state,
+          cumhaz = msfit_objects_boot[[j]],
+          model = time_model
+        ), probtrans_args)
+      )[[1]]
       print(min(apply(boot_matrix, 2, function(x) sum(!is.na(x)))))
-      if(j %%5==0 & !is.null(backup_file)){
-        save(coxrfx_fits_boot,probtrans_objects_boot,
-             msfit_objects_boot,boot_matrix,j, file =backup_file)
+      if(j %% 5 == 0 & !is.null(backup_file)) {
+        save(coxrfx_fits_boot, probtrans_objects_boot,
+             msfit_objects_boot, boot_matrix, j, file = backup_file)
       }
-      j<-j+1
-    } 
-    if(min(apply(boot_matrix, 2, function(x) sum(!is.na(x))))>=min_nr_samples) break
-    
+      j <- j + 1
+    }
+    if (
+      min(apply(boot_matrix, 2, function(x) sum(!is.na(x)))) >= min_nr_samples
+    ) break
   }
+  CIs <- apply(boot_matrix, 2, hdi, credMass = 0.95)
+  CIs <- rbind(CIs, apply(boot_matrix, 2, function(x) sum(!is.na(x))))
+  dimnames(CIs)[[1]][3] <- "n_samples"
   
-  CIs<-apply(boot_matrix,2,hdi,credMass=0.95)
-  CIs<-rbind(CIs,apply(boot_matrix, 2, function(x) sum(!is.na(x))))
-  dimnames(CIs)[[1]][3]<-"n_samples"
+  probtrans_CIs <- lapply(colnames(tmat), CIs_for_target_state,
+                          probtrans_objects_boot = probtrans_objects_boot)
+  names(probtrans_CIs) <- colnames(tmat)
   
-  probtrans_CIs<-lapply(colnames(tmat),CIs_for_target_state,
-                        probtrans_objects_boot=probtrans_objects_boot)
-  names(probtrans_CIs)<-colnames(tmat)
-  
-  cumhaz_CIs<-lapply(sort(unique(mstate_data_expanded$trans)),cumhazCIs_for_target_transition,
-           msfit_objects_boot=msfit_objects_boot)
-  
-  
-  
-  return(list(coefficients_CIs=CIs,coxrfx_fits_boot=coxrfx_fits_boot,
-              probtrans_CIs=probtrans_CIs,
-              probtrans_objects_boot=probtrans_objects_boot, 
-              msfit_objects_boot=msfit_objects_boot,
-              patient_data=patient_data,cumhaz_CIs=cumhaz_CIs))
-  
+  cumhaz_CIs <- lapply(sort(unique(mstate_data$trans)),
+                       cumhazCIs_for_target_transition,
+                       msfit_objects_boot = msfit_objects_boot)
+
+  return(list(coefficients_CIs = CIs,
+              coxrfx_fits_boot = coxrfx_fits_boot,
+              probtrans_CIs = probtrans_CIs,
+              probtrans_objects_boot = probtrans_objects_boot, 
+              msfit_objects_boot = msfit_objects_boot,
+              patient_data = patient_data,
+              cumhaz_CIs = cumhaz_CIs))
 }
 
 #' Leave-one-out estimation
@@ -341,6 +405,23 @@ loo_ebmstate<-function(mstate_data,mstate_data_expanded,which_group,
                      patient_IDs,initial_state,tmat,time_model,
                      backup_file=NULL,input_file=NULL,coxrfx_args=list(),
                      msfit_args=NULL,probtrans_args=NULL){
+stopifnot(
+  "argument 'mstate_data' must be a data frame" = is.data.frame(mstate_data),
+  "argument 'mstate_data_expanded' must be a data frame" = is.data.frame(mstate_data_expanded),
+  "argument 'which_group' must be of type 'character'" = is.character(which_group),
+  "argument 'patient_IDs' must be numeric" = is.numeric(patient_IDs),
+  "argument 'initial_state' must be of type 'character'" = is.character(initial_state),
+  "argument 'tmat' must be a matrix" = is.matrix(tmat),
+  "argument 'time_model' must be either 'clockreset' or 'clockforward'" 
+    = time_model %in% c("clockreset","clockforward"),
+  "argument 'backup_file' must be of type 'character'" 
+    = (is.null(backup_file) | is.character(backup_file)),
+  "argument 'input_file' must be of type 'character'" 
+    = (is.null(input_file) | is.character(input_file)),
+  "argument 'coxrfx_args' must be a list" = (is.null(coxrfx_args) | is.list(coxrfx_args)),
+  "argument 'msfit_args' must be a list" = (is.null(msfit_args) | is.list(msfit_args)),
+  "argument 'probtrans_args' must be a list" = (is.null(probtrans_args) | is.list(probtrans_args))
+  )
   list2env(coxrfx_args,envir = environment())
   if(!is.null(input_file)){
     load(input_file)

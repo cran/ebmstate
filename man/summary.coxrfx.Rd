@@ -12,9 +12,16 @@
 
 \item{...}{Further arguments passed to or from other methods.}
 }
+\value{
+Returns an invisible NULL object.
+}
 \description{
 This function prints the point estimates of parameters and 
 hyperparameters contained in a \code{coxrfx} object.
+}
+\details{
+Prints two data frames, one with hyperparameter estimates and 
+another with regression coefficient estimates.
 }
 \author{
 Rui Costa

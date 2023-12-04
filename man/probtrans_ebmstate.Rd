@@ -62,7 +62,7 @@ data("msfit_object_sample")
 
 #compute transition probabilities
 probtrans_object<-probtrans_ebmstate("health",
-   msfit_object_sample,"Markov")
+   msfit_object_sample,"clockforward")
 }
 }
 \seealso{

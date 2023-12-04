@@ -37,9 +37,9 @@
 #include "survS.h"
 #include "survproto.h"
 
-void agscore(Sint   *nx,       Sint   *nvarx,      double *y,
-	     double *covar2,   Sint   *strata,     double *score,
-	     double *weights,  Sint   *method,     double *resid2, double *a)
+void agscore(int   *nx,       int   *nvarx,      double *y,
+	     double *covar2,   int   *strata,     double *score,
+	     double *weights,  int   *method,     double *resid2, double *a)
     {
     int i,k;
     int n, nvar;

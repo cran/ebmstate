@@ -5,7 +5,7 @@
 \title{Compute subject-specific transition probabilities
 using a convolution algorithm based on the Fast Fourier transform.}
 \usage{
-probtrans_fft(initial_state, cumhaz, time)
+probtrans_fft(initial_state, cumhaz, max_time, nr_steps = 10000)
 }
 \arguments{
 \item{initial_state}{The present function 
@@ -15,8 +15,11 @@ in this argument.}
 \item{cumhaz}{An \code{msfit} object created by running
 \code{mstate} or \code{mstate_generic}.}
 
-\item{time}{A vector of positive and increasing time points
-starting from and including zero.}
+\item{max_time}{The maximum time for which transition probabilities
+are estimated.}
+
+\item{nr_steps}{The number of steps in the convolution algorithm
+(larger increases precision but makes it slower)}
 }
 \value{
 An object of class 'probtrans'. See the 'value' 
@@ -28,21 +31,29 @@ using a convolution algorithm based on the Fast Fourier transform.
 }
 \details{
 The \code{time} argument is crucial for precision.
-The density of time points and 
+The density of time points and
 the upper time limit should
 be increased until the estimated curves become stable.
 A useful rule of thumb is to set the upper time limit
-to a time point in which the 
+to a time point in which the
 probability of each transient state is zero and the probability of
 each absorbing state is constant.
 
-The algorithm behind \code{probtrans_ebmstate} is based 
+For the same approximation grid, \code{probtrans_fft} doesn’t
+always yield the same result as \code{probtrans_ebmstate}
+(semi-Markov version), even though they are meant to approximate
+exactly the same convolution. \code{probtrans_ebmstate} is
+sensitive to the grid interval size, but not such much to the
+maximum grid time. \code{probtrans_fft} is sensitive to both
+these parameters, as referred above.
+
+The algorithm behind \code{probtrans_ebmstate} is based
 on the convolution of density and survival functions and
 is suitable for processes with a tree-like transition
 structure only.
 }
 \seealso{
-\code{\link{probtrans}};
+\code{\link{probtrans}}; \code{\link{probtrans_ebmstate}}
 }
 \author{
 Rui Costa
