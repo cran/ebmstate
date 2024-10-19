@@ -47,7 +47,7 @@ probabilities for different states are to be calculated (default is FALSE).}
 }
 \value{
 An object of class \code{probtrans}. See the `value' section in the
-the help page of \code{\link{probtrans}} for details.
+the help page of \code{\link[mstate]{probtrans}} for details.
 }
 \description{
 This function is a wrapper for \code{mstate::probtrans}. Its purpose is to 
@@ -77,10 +77,10 @@ competing risks models. \emph{Computer Methods and Programs in Biomedicine}
 \strong{99}, 261–274.
 }
 \seealso{
-\code{\link[mstate:probtrans]{mstate::probtrans}}; \code{\link[mstate:msfit]{mstate::msfit}}; \code{\link{msfit_generic}}.
+\code{\link[mstate]{probtrans}}; \code{\link[mstate]{msfit}}; \code{\link{msfit_generic}}.
 }
 \author{
 Rui Costa, adapting the work of L. de Wreede,
 M. Fiocco and H. Putter in the
-\code{\link{mstate}} package.
+\code{mstate} package.
 }

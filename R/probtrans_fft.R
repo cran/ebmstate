@@ -35,7 +35,7 @@
 #'@return An object of class 'probtrans'. See the 'value' 
 #'section in the help page of \code{mstate::probtrans}.
 #'@author Rui Costa
-#'@seealso \code{\link{probtrans}}; \code{\link{probtrans_ebmstate}}
+#'@seealso \code{\link[mstate]{probtrans}}; \code{\link{probtrans_ebmstate}}
 #'
 #'@export
 

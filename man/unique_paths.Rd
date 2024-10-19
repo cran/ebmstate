@@ -11,8 +11,8 @@ unique_paths(from_state, tmat)
 
 \item{tmat}{A transition matrix describing the states and transitions in 
 the multi-state model, as can be obtained by running
-\code{\link{transMat}}. 
-See argument \code{trans} in \code{\link{msprep}} (\code{mstate}
+\code{\link[mstate]{transMat}}. 
+See argument \code{trans} in \code{\link[mstate]{msprep}} (\code{mstate}
 package) for more detailed information.}
 }
 \value{
@@ -29,7 +29,7 @@ It is not meant to be called by the user.
 }
 \seealso{
 \code{\link{probtrans_by_convolution}};
-\code{\link{transMat}}.
+\code{\link[mstate]{transMat}}.
 }
 \author{
 Rui Costa

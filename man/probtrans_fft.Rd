@@ -53,7 +53,7 @@ is suitable for processes with a tree-like transition
 structure only.
 }
 \seealso{
-\code{\link{probtrans}}; \code{\link{probtrans_ebmstate}}
+\code{\link[mstate]{probtrans}}; \code{\link{probtrans_ebmstate}}
 }
 \author{
 Rui Costa

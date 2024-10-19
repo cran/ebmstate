@@ -12,7 +12,7 @@ same group sharing the same Gaussian prior. It takes
 as input a data set in 'long format' and generates
 estimates of relative hazards, cumulative hazard
 functions and transition probabilities. It relies 
-on packages \code{\link{survival}} and \code{\link{mstate}} 
+on packages \code{survival} and \code{mstate} 
 and incorporates some
 of their functions to reduce upstream dependency.
 }

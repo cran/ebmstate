@@ -12,10 +12,10 @@
 #' @param vartype A character string specifying the type of
 #' variances to be computed (so only needed if variance=TRUE).
 #' @param trans Transition matrix describing the states and transitions in 
-#' the multi-state model. See \code{trans} in \code{\link[mstate:msprep]{mstate::msprep}}
+#' the multi-state model. See \code{trans} in \code{\link[mstate]{msprep}}
 #' for more detailed information.
 #' @param ... Further arguments
-#' @return An 'msfit' object. See \code{\link[mstate:msfit]{mstate::msfit}} for details.
+#' @return An 'msfit' object. See \code{\link[mstate]{msfit}} for details.
 #' If the S3 method \code{msfit_generic.coxrfx} is called, the 
 #' returned object will be of class \code{c(msfit,coxrfx)}; 
 #' otherwise, it will be of class \code{msfit}.
@@ -32,12 +32,12 @@
 #'  in the multi-state model, and one column for each covariate.
 #' An additional column strata (numeric) is needed to describe for each transition to
 #' which stratum it belongs. The name has to be \code{strata}, even if in the original
-#' \code{coxph} call another variable was used. See \code{\link{msfit}} for more details.
+#' \code{coxph} call another variable was used. See \code{\link[mstate]{msfit}} for more details.
 #'  
 #' @author Rui Costa, adapting the work of L. de Wreede,
 #' M. Fiocco and H. Putter in the
-#' \code{\link{mstate}} package.
-#' @seealso \code{\link[mstate:msfit]{mstate::msfit}}; \code{\link[mstate:msprep]{mstate::msprep}}; \code{\link[mstate:plot.msfit]{mstate::plot.msfit}}.
+#' \code{mstate} package.
+#' @seealso \code{\link[mstate]{msfit}}; \code{\link[mstate]{msprep}}; \code{\link[mstate]{plot.msfit}}.
 #' @references 
 #' de Wreede LC, Fiocco M, and Putter H (2010). The mstate package for 
 #' estimation and prediction in non- and semi-parametric multi-state and 

@@ -8,7 +8,7 @@ cumhaz_splines(cumhaz)
 }
 \arguments{
 \item{cumhaz}{An object of class \code{msfit}, created by 
-\code{\link{msfit_generic}} or \code{\link{msfit}}.}
+\code{\link{msfit_generic}} or \code{\link[mstate]{msfit}}.}
 }
 \value{
 A list of estimated cumulative hazard functions (one for each transition).
@@ -20,7 +20,7 @@ Creates a spline approximation for the vector of cumulative hazards of each tran
 This function is used by the function \code{probtrans_by_convolution}. It is not meant to be called by the user.
 }
 \seealso{
-\code{\link{msfit_generic}}; \code{\link{msfit}}; \code{\link{probtrans_by_convolution}}.
+\code{\link{msfit_generic}}; \code{\link[mstate]{msfit}}; \code{\link{probtrans_by_convolution}}.
 }
 \author{
 Rui Costa

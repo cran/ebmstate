@@ -34,11 +34,11 @@ a multi-state Cox model.}
 variances to be computed (so only needed if variance=TRUE).}
 
 \item{trans}{Transition matrix describing the states and transitions in 
-the multi-state model. See \code{trans} in \code{\link[mstate:msprep]{mstate::msprep}}
+the multi-state model. See \code{trans} in \code{\link[mstate]{msprep}}
 for more detailed information.}
 }
 \value{
-An 'msfit' object. See \code{\link[mstate:msfit]{mstate::msfit}} for details.
+An 'msfit' object. See \code{\link[mstate]{msfit}} for details.
 If the S3 method \code{msfit_generic.coxrfx} is called, the 
 returned object will be of class \code{c(msfit,coxrfx)}; 
 otherwise, it will be of class \code{msfit}.
@@ -62,7 +62,7 @@ The data frame given as \code{newdata} input needs to have one row for each tran
  in the multi-state model, and one column for each covariate.
 An additional column strata (numeric) is needed to describe for each transition to
 which stratum it belongs. The name has to be \code{strata}, even if in the original
-\code{coxph} call another variable was used. See \code{\link{msfit}} for more details.
+\code{coxph} call another variable was used. See \code{\link[mstate]{msfit}} for more details.
 }
 \examples{
 # Compute cumulative hazard rates
@@ -119,10 +119,10 @@ competing risks models. \emph{Computer Methods and Programs in Biomedicine}
 \strong{99}, 261–274.
 }
 \seealso{
-\code{\link[mstate:msfit]{mstate::msfit}}; \code{\link[mstate:msprep]{mstate::msprep}}; \code{\link[mstate:plot.msfit]{mstate::plot.msfit}}.
+\code{\link[mstate]{msfit}}; \code{\link[mstate]{msprep}}; \code{\link[mstate]{plot.msfit}}.
 }
 \author{
 Rui Costa, adapting the work of L. de Wreede,
 M. Fiocco and H. Putter in the
-\code{\link{mstate}} package.
+\code{mstate} package.
 }

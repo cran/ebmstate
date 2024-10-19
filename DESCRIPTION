@@ -1,7 +1,7 @@
 Package: ebmstate
 Type: Package
 Title: Empirical Bayes Multi-State Cox Model
-Version: 0.1.4
+Version: 0.1.5
 Authors@R: 
     c(person(given = "Rui",
              family = "Costa",
@@ -50,7 +50,7 @@ RoxygenNote: 7.2.3
 Encoding: UTF-8
 LazyData: true
 NeedsCompilation: yes
-Packaged: 2023-12-02 16:42:33 UTC; RuiCosta
+Packaged: 2024-10-19 14:02:43 UTC; RuiCosta
 Author: Rui Costa [aut, cre],
   Moritz Gerstung [aut],
   Terry M Therneau [ctb] (author of 'survival', a package from which code
@@ -67,4 +67,4 @@ Author: Rui Costa [aut, cre],
     parts were copied)
 Maintainer: Rui Costa <ruibarrigana@hotmail.com>
 Repository: CRAN
-Date/Publication: 2023-12-04 17:10:02 UTC
+Date/Publication: 2024-10-19 14:20:01 UTC

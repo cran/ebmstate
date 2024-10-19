@@ -6,9 +6,9 @@
 #'This function is used by the function \code{probtrans_by_convolution}. It is not meant to be called by the user.
 #'
 #'@param cumhaz An object of class \code{msfit}, created by 
-#'\code{\link{msfit_generic}} or \code{\link{msfit}}.
+#'\code{\link{msfit_generic}} or \code{\link[mstate]{msfit}}.
 #'@return A list of estimated cumulative hazard functions (one for each transition).
-#'@seealso \code{\link{msfit_generic}}; \code{\link{msfit}}; \code{\link{probtrans_by_convolution}}.
+#'@seealso \code{\link{msfit_generic}}; \code{\link[mstate]{msfit}}; \code{\link{probtrans_by_convolution}}.
 #'@author Rui Costa
 
 cumhaz_splines<-function(cumhaz){
@@ -31,15 +31,15 @@ cumhaz_splines<-function(cumhaz){
 #'@param from_state Initial state.
 #'@param tmat A transition matrix describing the states and transitions in 
 #' the multi-state model, as can be obtained by running
-#' \code{\link{transMat}}. 
-#' See argument \code{trans} in \code{\link{msprep}} (\code{mstate}
+#' \code{\link[mstate]{transMat}}. 
+#' See argument \code{trans} in \code{\link[mstate]{msprep}} (\code{mstate}
 #' package) for more detailed information.
 #'@return A matrix where each column is a sequence of states taken by the process until absorption. 
 #'There are as many columns as the number of possible paths until absorption.
 #'
 #'@author Rui Costa
 #'@seealso \code{\link{probtrans_by_convolution}};
-#' \code{\link{transMat}}.
+#' \code{\link[mstate]{transMat}}.
 
 unique_paths<-function(from_state,tmat){
   M<-matrix(from_state)
@@ -180,7 +180,7 @@ joint_cum_hazard_function<-function(t,competing_transitions,spline_list){
 #'section in the help page of \code{mstate::probtrans}.
 #'@example inst/examples/probtrans_ebmstate-example.R
 #'@author Rui Costa & Moritz Gerstung
-#'@seealso \code{\link{probtrans}};
+#'@seealso \code{\link[mstate]{probtrans}};
 #'
 #'@export
 probtrans_ebmstate<-function(initial_state,cumhaz,model,max_time=NULL,nr_steps=10000){

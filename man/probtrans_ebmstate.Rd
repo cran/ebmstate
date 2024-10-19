@@ -66,7 +66,7 @@ probtrans_object<-probtrans_ebmstate("health",
 }
 }
 \seealso{
-\code{\link{probtrans}};
+\code{\link[mstate]{probtrans}};
 }
 \author{
 Rui Costa & Moritz Gerstung

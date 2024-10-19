@@ -62,8 +62,8 @@
 #' @example inst/examples/CoxRFX-example.R
 CoxRFX <- function(Z, surv, groups = rep(1, ncol(Z)), which.mu = unique(groups), tol=1e-3, max.iter=50, sigma0 = 0.1, sigma.hat=c("df","MLE","REML","BLUP"), verbose=FALSE, ...){
     stopifnot(
-    "argument 'Z' must be of class 'data.frame'" = class(Z) == 'data.frame',
-    "argument 'surv' must be of class 'Surv'" = class(surv) == 'Surv'
+    "argument 'Z' must be of class 'data.frame'" = any(class(Z) == 'data.frame'),
+    "argument 'surv' must be of class 'Surv'" = any(class(surv) == 'Surv')
   )
   
   ##
